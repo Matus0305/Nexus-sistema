@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
-// CONFIGURACIÓN (Pon tus datos aquí)
+// CONFIGURACIÓN - Mantén tus credenciales aquí
 const supabase = createClient('https://ajdsaqvxicjyahrcqzby.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqZHNhcXZ4aWNqeWFocmNxemJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQ3MjMsImV4cCI6MjA4NjQzMDcyM30.25RdfaZ-dYVg02YIT6b6kH3ljAPV2ZWLwOCbCXCfHwk')
 
 function App() {
@@ -16,102 +16,126 @@ function App() {
     setCarros(data || [])
   }
 
-  async function agregarCarro(e) {
-    e.preventDefault()
-    await supabase.from('flota').insert([{ nombre_vehiculo: nombre, placa: placa, estado: 'Disponible' }])
-    setNombre(''); setPlaca(''); getCarros()
-  }
-
-  async function eliminarCarro(id) {
-    if (window.confirm("¿Eliminar este vehículo de Nexus?")) {
-      await supabase.from('flota').delete().eq('id', id)
-      getCarros()
-    }
-  }
-
-  async function actualizarEstado(id, nuevoEstado) {
-    await supabase.from('flota').update({ estado: nuevoEstado }).eq('id', id)
-    getCarros()
-  }
-
-  // Colores según estado
-  const getColor = (estado) => {
+  const getStatusStyle = (estado) => {
     switch (estado) {
-      case 'En Renta': return '#FFC107'; // Amarillo
-      case 'Activo': return '#0D6EFD';   // Azul
-      case 'En Taller': return '#DC3545'; // Rojo
-      default: return '#198754';         // Verde (Disponible)
+      case 'En Renta': return { color: '#FFD60A', shadow: 'rgba(255, 214, 10, 0.3)' }; // Gold
+      case 'Activo': return { color: '#0A84FF', shadow: 'rgba(10, 132, 255, 0.3)' };   // Electric Blue
+      case 'En Taller': return { color: '#FF453A', shadow: 'rgba(255, 69, 58, 0.3)' };  // Red
+      default: return { color: '#32D74B', shadow: 'rgba(50, 215, 75, 0.3)' };         // Green
     }
   }
 
   return (
     <div style={{ 
-      backgroundColor: '#f8f9fa', 
+      backgroundColor: '#000000', 
       minHeight: '100vh', 
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' 
+      color: '#F5F5F7',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      padding: '20px'
     }}>
-      {/* HEADER */}
-      <nav style={{ backgroundColor: '#1a237e', color: 'white', padding: '15px 20px', textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-        <h2 style={{ margin: 0, letterSpacing: '1px' }}>NEXUS FLEET</h2>
-        <span style={{ fontSize: '12px', opacity: 0.8 }}>Gestión de Flota · El Salvador</span>
-      </nav>
+      {/* HEADER PREMIUM */}
+      <header style={{ padding: '40px 0 30px', textAlign: 'left' }}>
+        <h1 style={{ fontSize: '34px', fontWeight: '700', margin: 0, letterSpacing: '-1px' }}>Nexus</h1>
+        <p style={{ color: '#86868b', fontSize: '16px', margin: '5px 0' }}>Flota Operativa</p>
+      </header>
 
-      <div style={{ maxWidth: '500px', margin: 'auto', padding: '20px' }}>
+      <div style={{ maxWidth: '480px', margin: 'auto' }}>
         
-        {/* FORMULARIO COMPACTO */}
-        <section style={{ backgroundColor: 'white', padding: '20px', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', marginBottom: '25px' }}>
-          <h4 style={{ marginTop: 0, color: '#333' }}>+ Registrar Vehículo</h4>
-          <form onSubmit={agregarCarro} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <input placeholder="Nombre (ej: Nissan Versa)" value={nombre} onChange={(e) => setNombre(e.target.value)} required 
-              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '16px' }} />
-            <input placeholder="Número de Placa" value={placa} onChange={(e) => setPlaca(e.target.value)} required 
-              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '16px' }} />
-            <button type="submit" style={{ padding: '12px', backgroundColor: '#1a237e', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-              GUARDAR EN FLOTA
+        {/* PANEL DE REGISTRO MINIMALISTA */}
+        <section style={{ 
+          background: '#121212', 
+          padding: '25px', 
+          borderRadius: '24px', 
+          marginBottom: '35px',
+          border: '1px solid #2c2c2e'
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <input 
+              placeholder="Vehículo" 
+              value={nombre} 
+              onChange={(e) => setNombre(e.target.value)}
+              style={{ background: '#1c1c1e', border: '1px solid #2c2c2e', padding: '16px', borderRadius: '14px', color: '#fff', fontSize: '16px', outline: 'none' }}
+            />
+            <input 
+              placeholder="Placa" 
+              value={placa} 
+              onChange={(e) => setPlaca(e.target.value)}
+              style={{ background: '#1c1c1e', border: '1px solid #2c2c2e', padding: '16px', borderRadius: '14px', color: '#fff', fontSize: '16px', outline: 'none' }}
+            />
+            <button 
+              onClick={async () => {
+                await supabase.from('flota').insert([{ nombre_vehiculo: nombre, placa: placa, estado: 'Disponible' }]);
+                setNombre(''); setPlaca(''); getCarros();
+              }}
+              style={{ background: '#fff', color: '#000', border: 'none', padding: '16px', borderRadius: '14px', fontWeight: '600', fontSize: '16px', cursor: 'pointer', marginTop: '5px' }}
+            >
+              Agregar a la Flota
             </button>
-          </form>
+          </div>
         </section>
 
-        {/* LISTADO DE TARJETAS */}
-        <div style={{ display: 'grid', gap: '15px' }}>
-          {carros.map((carro) => (
-            <div key={carro.id} style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '15px', 
-              padding: '18px', 
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-              borderLeft: `6px solid ${getColor(carro.estado)}`
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', color: '#1a237e' }}>{carro.nombre_vehiculo}</h3>
-                  <span style={{ fontSize: '14px', color: '#666', fontWeight: 'bold' }}>{carro.placa}</span>
+        {/* LISTADO DE TARJETAS GLASS */}
+        <div style={{ display: 'grid', gap: '18px' }}>
+          {carros.map((carro) => {
+            const style = getStatusStyle(carro.estado);
+            return (
+              <div key={carro.id} style={{ 
+                background: 'rgba(28, 28, 30, 0.6)', 
+                backdropFilter: 'blur(15px)',
+                WebkitBackdropFilter: 'blur(15px)',
+                borderRadius: '28px', 
+                padding: '24px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '600', color: '#F5F5F7' }}>{carro.nombre_vehiculo}</h3>
+                    <p style={{ margin: '4px 0', color: '#86868b', fontSize: '14px', fontWeight: '500' }}>{carro.placa}</p>
+                  </div>
+                  <div style={{ 
+                    padding: '6px 14px', 
+                    borderRadius: '20px', 
+                    fontSize: '11px', 
+                    fontWeight: '800', 
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    backgroundColor: style.shadow,
+                    color: style.color,
+                    border: `1px solid ${style.color}`
+                  }}>
+                    {carro.estado}
+                  </div>
                 </div>
-                <button onClick={() => eliminarCarro(carro.id)} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '18px' }}>🗑️</button>
-              </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <select 
-                  value={carro.estado} 
-                  onChange={(e) => actualizarEstado(carro.id, e.target.value)}
-                  style={{ 
-                    flex: 1,
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    border: `2px solid ${getColor(carro.estado)}`,
-                    backgroundColor: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '14px'
-                  }}
-                >
-                  <option value="Disponible">🟢 Disponible</option>
-                  <option value="En Renta">🟡 En Renta</option>
-                  <option value="Activo">🔵 Activo (Plataforma)</option>
-                  <option value="En Taller">🔴 En Taller</option>
-                </select>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <select 
+                    value={carro.estado} 
+                    onChange={async (e) => {
+                      await supabase.from('flota').update({ estado: e.target.value }).eq('id', carro.id);
+                      getCarros();
+                    }}
+                    style={{ 
+                      flex: 1, background: '#2c2c2e', color: '#fff', border: 'none', 
+                      padding: '14px', borderRadius: '12px', fontSize: '15px', fontWeight: '500', outline: 'none'
+                    }}
+                  >
+                    <option value="Disponible">Disponible</option>
+                    <option value="En Renta">En Renta</option>
+                    <option value="Activo">Activo</option>
+                    <option value="En Taller">En Taller</option>
+                  </select>
+                  
+                  <button 
+                    onClick={async () => { if(confirm('¿Eliminar unidad?')) { await supabase.from('flota').delete().eq('id', carro.id); getCarros(); } }}
+                    style={{ background: '#1c1c1e', border: '1px solid #2c2c2e', color: '#FF453A', padding: '14px', borderRadius: '12px', cursor: 'pointer', width: '50px' }}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
